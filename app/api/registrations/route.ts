@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabaseInsertReturning, uploadReceipt } from "../../../lib/supabase";
+import { supabaseInsert, uploadReceipt } from "../../../lib/supabase";
 
 export async function POST(request: Request) {
   try {
@@ -14,13 +14,13 @@ export async function POST(request: Request) {
     const id = crypto.randomUUID();
     const receiptKey = `${id}/${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
     await uploadReceipt(receiptKey, file);
-    const created = await supabaseInsertReturning<{folio:string}>("registrations", {
+    await supabaseInsert("registrations", {
       id, event_id: String(form.get("eventId")), full_name: String(form.get("fullName")), email: String(form.get("email")).toLowerCase(),
       phone: String(form.get("phone")), birth_date: String(form.get("birthDate")), gender: String(form.get("gender")), category: String(form.get("category")),
       shirt_size: String(form.get("shirtSize")), city: String(form.get("city")), club: String(form.get("club") || ""), emergency_name: String(form.get("emergencyName")),
       emergency_phone: String(form.get("emergencyPhone")), receipt_key: receiptKey, payment_status: "pending",
     });
-    return NextResponse.json({ ok: true, folio:created.folio });
+    return NextResponse.json({ ok: true });
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "No pudimos guardar el registro. Intenta nuevamente." }, { status: 500 });

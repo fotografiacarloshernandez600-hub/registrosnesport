@@ -6,7 +6,7 @@ alter table public.registrations alter column folio drop not null;
 create unique index if not exists registrations_event_folio_key
 on public.registrations(event_id,folio);
 
-create or replace function public.assign_event_folio()
+create or replace function public.assign_folio_on_payment_approval()
 returns trigger
 language plpgsql
 security invoker
@@ -14,21 +14,25 @@ set search_path = ''
 as $$
 declare next_number integer;
 begin
-  perform pg_advisory_xact_lock(hashtextextended(new.event_id::text, 0));
-  select coalesce(max((split_part(folio,'.',2))::integer),0)+1
-    into next_number
-    from public.registrations
-   where event_id = new.event_id and folio ~ '^0\.[0-9]+$';
-  new.folio := '0.' || lpad(next_number::text,3,'0');
+  if new.payment_status = 'approved'
+     and old.payment_status is distinct from 'approved'
+     and new.folio is null then
+    perform pg_advisory_xact_lock(hashtextextended(new.event_id::text, 0));
+    select coalesce(max((split_part(folio,'.',2))::integer),0)+1
+      into next_number
+      from public.registrations
+     where event_id = new.event_id and folio ~ '^0\.[0-9]+$';
+    new.folio := '0.' || lpad(next_number::text,3,'0');
+  end if;
   return new;
 end;
 $$;
 
 drop trigger if exists registrations_assign_event_folio on public.registrations;
-create trigger registrations_assign_event_folio
-before insert on public.registrations
-for each row when (new.folio is null or new.folio = '')
-execute function public.assign_event_folio();
+drop trigger if exists registrations_assign_folio_on_approval on public.registrations;
+create trigger registrations_assign_folio_on_approval
+before update of payment_status on public.registrations
+for each row execute function public.assign_folio_on_payment_approval();
 
 create table if not exists public.portfolio_items (
   id uuid primary key default gen_random_uuid(),
@@ -60,4 +64,3 @@ alter table public.portfolio_items enable row level security;
 alter table public.quote_requests enable row level security;
 create index if not exists portfolio_items_category_sort on public.portfolio_items(category,sort_order,created_at desc);
 create index if not exists quote_requests_status_created on public.quote_requests(status,created_at desc);
-

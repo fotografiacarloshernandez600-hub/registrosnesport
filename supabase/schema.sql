@@ -63,3 +63,19 @@ on conflict (id) do nothing;
 insert into storage.buckets (id,name,public,file_size_limit,allowed_mime_types)
 values ('event-assets','event-assets',true,6291456,array['image/jpeg','image/png','image/webp','image/gif'])
 on conflict (id) do update set public=true,file_size_limit=excluded.file_size_limit,allowed_mime_types=excluded.allowed_mime_types;
+
+create or replace function public.assign_folio_on_payment_approval()
+returns trigger language plpgsql security invoker set search_path = '' as $$
+declare next_number integer;
+begin
+  if new.payment_status='approved' and old.payment_status is distinct from 'approved' and new.folio is null then
+    perform pg_advisory_xact_lock(hashtextextended(new.event_id::text,0));
+    select coalesce(max((split_part(folio,'.',2))::integer),0)+1 into next_number
+    from public.registrations where event_id=new.event_id and folio ~ '^0\.[0-9]+$';
+    new.folio := '0.' || lpad(next_number::text,3,'0');
+  end if;
+  return new;
+end;
+$$;
+create trigger registrations_assign_folio_on_approval before update of payment_status
+on public.registrations for each row execute function public.assign_folio_on_payment_approval();

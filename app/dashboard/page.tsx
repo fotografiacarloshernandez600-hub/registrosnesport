@@ -3,7 +3,7 @@ import { isAdmin } from "@/lib/admin-auth";
 import { supabaseSelect } from "@/lib/supabase";
 import DashboardClient from "./dashboard-client";
 
-export type AdminRegistration={id:string;event_id:string;folio:string;full_name:string;email:string;phone:string;category:string;shirt_size:string;payment_status:string;receipt_key:string;race_time_ms:number|null;created_at:string};
+export type AdminRegistration={id:string;event_id:string;folio:string|null;full_name:string;email:string;phone:string;category:string;shirt_size:string;payment_status:string;receipt_key:string;race_time_ms:number|null;created_at:string};
 export type AdminEvent={id:string;title:string;slug:string;event_date:string;location:string;status:string;price:number;hero_image:string|null};
 export type AdminPortfolio={id:string;category:string;title:string;description:string|null;image_url:string;sort_order:number};
 export type AdminQuote={id:string;full_name:string;organization:string|null;phone:string;email:string;city:string;event_type:string;estimated_runners:number;target_date:string|null;services:string;details:string|null;status:string;created_at:string};
