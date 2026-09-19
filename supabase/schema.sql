@@ -44,6 +44,8 @@ create table if not exists public.registrations (
   emergency_phone text not null,
   receipt_key text not null,
   payment_status text not null default 'pending' check (payment_status in ('pending','approved','rejected')),
+  kit_delivered_at timestamptz,
+  kit_delivered_by text,
   race_time_ms bigint,
   created_at timestamptz not null default now()
 );
