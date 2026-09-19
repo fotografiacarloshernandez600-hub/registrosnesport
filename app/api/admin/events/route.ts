@@ -23,6 +23,16 @@ export async function POST(request: Request) {
 
 export async function PATCH(request: Request) {
   if (!await isAdmin()) return NextResponse.json({ error:"No autorizado" },{status:401});
+  if ((request.headers.get("content-type")||"").includes("multipart/form-data")) {
+    try {
+      const form=await request.formData(),id=String(form.get("id")||"");
+      if(!id)return NextResponse.json({error:"Falta la carrera"},{status:400});
+      const values={title:String(form.get("title")||"").trim(),description:String(form.get("description")||""),location:String(form.get("location")||""),event_date:String(form.get("eventDate")||""),price:Number(form.get("price")),categories:String(form.get("categories")||""),includes:String(form.get("includes")||""),waiver:String(form.get("waiver")||""),privacy:String(form.get("privacy")||""),bank_name:String(form.get("bankName")||""),bank_holder:String(form.get("bankHolder")||""),bank_account:String(form.get("bankAccount")||""),bank_clabe:String(form.get("bankClabe")||""),status:String(form.get("status")||"draft"),prizes:String(form.get("prizes")||""),faq:String(form.get("faq")||"")};
+      if(!values.title||!values.event_date||!values.location)return NextResponse.json({error:"Completa los datos obligatorios de la carrera."},{status:400});
+      await supabaseUpdate("events",`id=eq.${encodeURIComponent(id)}`,values);
+      return NextResponse.json({ok:true});
+    }catch(error){return NextResponse.json({error:error instanceof Error?error.message:"No se pudo editar la carrera"},{status:500})}
+  }
   const {id,status}=await request.json();
   if (!id || !["draft","published","coming_soon","closed"].includes(status)) return NextResponse.json({error:"Datos inválidos"},{status:400});
   await supabaseUpdate("events",`id=eq.${encodeURIComponent(id)}`,{status});

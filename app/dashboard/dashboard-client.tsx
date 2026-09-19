@@ -16,6 +16,7 @@ import {
   Mail,
   Medal,
   MessageCircle,
+  Pencil,
   Plus,
   Search,
   Trash2,
@@ -27,6 +28,7 @@ import type {
   AdminQuote,
   AdminRegistration,
 } from "./page";
+import { EditEventModal, EditRunnerModal } from "./edit-modals";
 
 type Tab =
   | "summary"
@@ -70,6 +72,8 @@ export default function DashboardClient({
     [runnerEvent, setRunnerEvent] = useState(""),
     [resultEvent, setResultEvent] = useState(""),
     [sponsorSlots, setSponsorSlots] = useState([0]),
+    [editingEvent, setEditingEvent] = useState<AdminEvent | null>(null),
+    [editingRunner, setEditingRunner] = useState<AdminRegistration | null>(null),
     [notice, setNotice] = useState(connectionError),
     [busy, setBusy] = useState(false);
   const eventName = (id: string) =>
@@ -661,6 +665,12 @@ export default function DashboardClient({
                         </td>
                         <td>
                           <div className="row-actions contact-actions">
+                            <button
+                              className="edit-record"
+                              onClick={() => setEditingRunner(x)}
+                            >
+                              <Pencil /> Editar
+                            </button>
                             {x.payment_status === "approved" && x.folio && (
                               <>
                                 <a
@@ -801,6 +811,13 @@ export default function DashboardClient({
                       <option value="published">Publicada</option>
                       <option value="closed">Cerrada</option>
                     </select>
+                    <button
+                      className="edit-event-button"
+                      onClick={() => setEditingEvent(e)}
+                      title="Editar carrera"
+                    >
+                      <Pencil />
+                    </button>
                     <button onClick={() => removeEvent(e.id)}>
                       <Trash2 />
                     </button>
@@ -1137,6 +1154,19 @@ export default function DashboardClient({
             </div>
           </form>
         </div>
+      )}
+      {editingEvent && (
+        <EditEventModal
+          event={editingEvent}
+          onClose={() => setEditingEvent(null)}
+        />
+      )}
+      {editingRunner && (
+        <EditRunnerModal
+          runner={editingRunner}
+          eventTitle={eventName(editingRunner.event_id)}
+          onClose={() => setEditingRunner(null)}
+        />
       )}
     </main>
   );
