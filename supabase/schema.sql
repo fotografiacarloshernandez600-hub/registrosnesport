@@ -30,7 +30,7 @@ create table if not exists public.events (
 create table if not exists public.registrations (
   id uuid primary key default gen_random_uuid(),
   event_id text not null,
-  folio text not null unique,
+  folio text,
   full_name text not null,
   email text not null,
   phone text not null,
@@ -51,6 +51,7 @@ create table if not exists public.registrations (
 create index if not exists idx_events_status_date on public.events(status,event_date);
 create index if not exists idx_registrations_event_status on public.registrations(event_id,payment_status);
 create index if not exists idx_registrations_event_time on public.registrations(event_id,race_time_ms) where race_time_ms is not null;
+create unique index if not exists registrations_event_folio_key on public.registrations(event_id,folio);
 
 alter table public.events enable row level security;
 alter table public.registrations enable row level security;

@@ -21,6 +21,18 @@ export async function supabaseInsert(table: string, value: Record<string, unknow
   if (!response.ok) throw new Error(await response.text());
 }
 
+export async function supabaseInsertReturning<T>(table: string, value: Record<string, unknown>): Promise<T> {
+  const response = await fetch(`${url}/rest/v1/${table}`, {
+    method: "POST",
+    headers: requestHeaders({ "content-type": "application/json", Prefer: "return=representation" }),
+    body: JSON.stringify(value),
+  });
+  if (!response.ok) throw new Error(await response.text());
+  const rows = await response.json() as T[];
+  if (!rows[0]) throw new Error("Supabase no devolvió el registro creado.");
+  return rows[0];
+}
+
 export async function supabaseUpdate(table: string, query: string, value: Record<string, unknown>) {
   const response = await fetch(`${url}/rest/v1/${table}?${query}`, {
     method: "PATCH",
