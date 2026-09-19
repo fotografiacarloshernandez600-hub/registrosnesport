@@ -16,6 +16,13 @@ create table if not exists public.events (
   bank_holder text not null,
   bank_account text not null,
   bank_clabe text not null,
+  hero_image text,
+  shirt_image text,
+  bib_image text,
+  medal_image text,
+  kit_image text,
+  prizes text,
+  faq text,
   status text not null default 'draft' check (status in ('draft','published','coming_soon','closed')),
   created_at timestamptz not null default now()
 );
@@ -43,6 +50,7 @@ create table if not exists public.registrations (
 
 create index if not exists idx_events_status_date on public.events(status,event_date);
 create index if not exists idx_registrations_event_status on public.registrations(event_id,payment_status);
+create index if not exists idx_registrations_event_time on public.registrations(event_id,race_time_ms) where race_time_ms is not null;
 
 alter table public.events enable row level security;
 alter table public.registrations enable row level security;
@@ -50,3 +58,7 @@ alter table public.registrations enable row level security;
 insert into storage.buckets (id,name,public)
 values ('payment-receipts','payment-receipts',false)
 on conflict (id) do nothing;
+
+insert into storage.buckets (id,name,public,file_size_limit,allowed_mime_types)
+values ('event-assets','event-assets',true,6291456,array['image/jpeg','image/png','image/webp','image/gif'])
+on conflict (id) do update set public=true,file_size_limit=excluded.file_size_limit,allowed_mime_types=excluded.allowed_mime_types;
