@@ -1,0 +1,2 @@
+import type{Metadata}from"next";import RaceTimer from"./race-timer";
+export const metadata:Metadata={title:"Cronómetro"};export default function Page(){return <main className="timer-page"><a className="brand logo-brand" href="/"><img src="/nesport-logo.png" alt="Nesport"/></a><div className="timer-shell"><span className="eyebrow"><span/> CRONÓMETRO DEL CORREDOR</span><h1>Tu carrera.<br/><em>Tu tiempo.</em></h1><p>Escribe tu folio confirmado. Inicia al cruzar la salida y finaliza al llegar a meta.</p><RaceTimer/></div></main>}
