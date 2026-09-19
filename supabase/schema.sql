@@ -50,6 +50,16 @@ create table if not exists public.registrations (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.event_sponsors (
+  id uuid primary key default gen_random_uuid(),
+  event_id uuid not null references public.events(id) on delete cascade,
+  name text not null,
+  logo_url text not null,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now()
+);
+alter table public.event_sponsors enable row level security;
+
 create index if not exists idx_events_status_date on public.events(status,event_date);
 create index if not exists idx_registrations_event_status on public.registrations(event_id,payment_status);
 create index if not exists idx_registrations_event_time on public.registrations(event_id,race_time_ms) where race_time_ms is not null;
