@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import type {
   AdminEvent,
+  AdminEventPhoto,
   AdminPortfolio,
   AdminQuote,
   AdminRegistration,
@@ -54,18 +55,21 @@ export default function DashboardClient({
   events: initialEvents,
   portfolio: initialPortfolio,
   quotes: initialQuotes,
+  eventPhotos: initialEventPhotos,
   connectionError,
 }: {
   rows: AdminRegistration[];
   events: AdminEvent[];
   portfolio: AdminPortfolio[];
   quotes: AdminQuote[];
+  eventPhotos: AdminEventPhoto[];
   connectionError: string;
 }) {
   const [rows, setRows] = useState(initial),
     [events, setEvents] = useState(initialEvents),
     [portfolio, setPortfolio] = useState(initialPortfolio),
     [quotes, setQuotes] = useState(initialQuotes),
+    [eventPhotos, setEventPhotos] = useState(initialEventPhotos),
     [tab, setTab] = useState<Tab>("summary"),
     [modal, setModal] = useState(false),
     [query, setQuery] = useState(""),
@@ -124,6 +128,7 @@ export default function DashboardClient({
           "bibImage",
           "medalImage",
           "kitImage",
+          "socksImage",
         ];
       const files = kinds
         .map((kind) => ({ kind, file: full.get(kind) }))
@@ -267,6 +272,18 @@ export default function DashboardClient({
       body: JSON.stringify({ id }),
     });
     if (r.ok) setPortfolio(portfolio.filter((x) => x.id !== id));
+  }
+  async function moderatePhoto(id: string, status: "approved" | "rejected" | "delete") {
+    if (status === "delete" && !confirm("¿Eliminar definitivamente esta fotografía?")) return;
+    const response = await fetch("/api/admin/event-photos", {
+      method: status === "delete" ? "DELETE" : "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(status === "delete" ? { id } : { id, status }),
+    });
+    const result = await response.json();
+    if (!response.ok) { setNotice(result.error || "No se pudo actualizar la fotografía."); return; }
+    setEventPhotos(status === "delete" ? eventPhotos.filter(x => x.id !== id) : eventPhotos.map(x => x.id === id ? { ...x, status } : x));
+    setNotice(status === "approved" ? "Fotografía aprobada y visible en la carrera." : status === "rejected" ? "Fotografía rechazada; no será pública." : "Fotografía eliminada.");
   }
   async function quoteStatus(id: string, status: string) {
     const r = await fetch("/api/admin/quotes", {
@@ -842,6 +859,7 @@ export default function DashboardClient({
                     <option value="playeras">Playeras</option>
                     <option value="medallas">Medallas</option>
                     <option value="dorsales">Dorsales y folios</option>
+                    <option value="calcetas">Calcetas</option>
                     <option value="eventos">Eventos</option>
                   </select>
                 </label>
@@ -886,6 +904,29 @@ export default function DashboardClient({
                 </article>
               ))}
             </div>
+            <section className="panel participant-photo-moderation">
+              <span>FOTOGRAFÍAS DE PARTICIPANTES</span>
+              <h2>Revisar antes de publicar</h2>
+              <p>Las fotos enviadas por los corredores permanecen privadas hasta que las apruebes.</p>
+              <div className="participant-photo-admin-grid">
+                {eventPhotos.map(photo => (
+                  <article key={photo.id}>
+                    <img src={photo.image_url} alt={photo.caption || photo.participant_name} />
+                    <div>
+                      <small>{eventName(photo.event_id)} · {photo.status === "pending" ? "Pendiente" : photo.status === "approved" ? "Aprobada" : "Rechazada"}</small>
+                      <b>{photo.participant_name}</b>
+                      {photo.caption && <p>{photo.caption}</p>}
+                      <div className="photo-admin-actions">
+                        {photo.status !== "approved" && <button onClick={() => moderatePhoto(photo.id, "approved")}>Aprobar</button>}
+                        {photo.status !== "rejected" && <button onClick={() => moderatePhoto(photo.id, "rejected")}>Rechazar</button>}
+                        <button onClick={() => moderatePhoto(photo.id, "delete")}>Eliminar</button>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+                {!eventPhotos.length && <p className="empty-row">Aún no hay fotos enviadas por participantes.</p>}
+              </div>
+            </section>
           </div>
         )}
         {tab === "quotes" && (
@@ -1066,6 +1107,10 @@ export default function DashboardClient({
                 <label>
                   Kit
                   <input name="kitImage" type="file" accept="image/*" />
+                </label>
+                <label>
+                  Calcetas
+                  <input name="socksImage" type="file" accept="image/*" />
                 </label>
               </div>
             </fieldset>

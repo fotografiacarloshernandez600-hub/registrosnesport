@@ -2,7 +2,7 @@ import{NextResponse}from"next/server";
 import{isAdmin}from"@/lib/admin-auth";
 import{supabaseUpdate,uploadEventAsset}from"@/lib/supabase";
 
-const columns:Record<string,string>={heroImage:"hero_image",shirtImage:"shirt_image",bibImage:"bib_image",medalImage:"medal_image",kitImage:"kit_image"};
+const columns:Record<string,string>={heroImage:"hero_image",shirtImage:"shirt_image",bibImage:"bib_image",medalImage:"medal_image",kitImage:"kit_image",socksImage:"socks_image"};
 export async function POST(request:Request){
  if(!await isAdmin())return NextResponse.json({error:"No autorizado"},{status:401});
  try{

@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { getEvent } from "@/lib/events";
 import RegistrationForm from "../../registration-form";
+import EventPhotoGallery from "../../event-photo-gallery";
+import { supabaseSelect } from "@/lib/supabase";
 export const dynamic = "force-dynamic";
 export default async function RaceDetail({
   params,
@@ -19,6 +21,10 @@ export default async function RaceDetail({
     event = await getEvent(slug);
   if (!event) notFound();
   const open = event.status === "published";
+  let participantPhotos: {id:string;participant_name:string;caption:string|null;image_url:string;created_at:string}[] = [];
+  try {
+    participantPhotos = await supabaseSelect("event_photos", `select=id,participant_name,caption,image_url,created_at&event_id=eq.${encodeURIComponent(event.id)}&status=eq.approved&order=created_at.desc&limit=100`);
+  } catch {}
   const kit = [
     { image: event.shirt_image, icon: <Shirt />, name: "Playera oficial" },
     { image: event.medal_image, icon: <Medal />, name: "Medalla finisher" },
@@ -28,6 +34,7 @@ export default async function RaceDetail({
       name: "Dorsal personalizado",
     },
     { image: event.kit_image, icon: <Sparkles />, name: "Kit del corredor" },
+    { image: event.socks_image, icon: <Shirt />, name: "Calcetas oficiales" },
   ].filter((x) => x.image || x.name);
   return (
     <main>
@@ -143,6 +150,7 @@ export default async function RaceDetail({
           </div>
         </section>
       )}
+      <EventPhotoGallery eventId={event.id} eventTitle={event.title} initialPhotos={participantPhotos} />
       {event.faq && (
         <section className="faq-section">
           <span>PREGUNTAS FRECUENTES</span>
