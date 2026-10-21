@@ -21,6 +21,7 @@ create table if not exists public.events (
   bib_image text,
   medal_image text,
   kit_image text,
+  socks_image text,
   prizes text,
   faq text,
   status text not null default 'draft' check (status in ('draft','published','coming_soon','closed')),
@@ -91,3 +92,25 @@ end;
 $$;
 create trigger registrations_assign_folio_on_approval before update of payment_status
 on public.registrations for each row execute function public.assign_folio_on_payment_approval();
+
+
+create table if not exists public.portfolio_items (
+  id uuid primary key default gen_random_uuid(),
+  category text not null check(category in ('playeras','medallas','dorsales','calcetas','eventos')),
+  title text not null,
+  description text,
+  image_url text not null,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now()
+);
+create table if not exists public.event_photos (
+  id uuid primary key default gen_random_uuid(),
+  event_id uuid not null references public.events(id) on delete cascade,
+  participant_name text not null,
+  caption text,
+  image_url text not null,
+  status text not null default 'pending' check(status in ('pending','approved','rejected')),
+  created_at timestamptz not null default now()
+);
+create index if not exists event_photos_event_status_created
+  on public.event_photos(event_id,status,created_at desc);

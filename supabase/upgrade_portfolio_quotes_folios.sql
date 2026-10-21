@@ -60,7 +60,28 @@ create table if not exists public.quote_requests (
   created_at timestamptz not null default now()
 );
 
+alter table public.portfolio_items drop constraint if exists portfolio_items_category_check;
+alter table public.portfolio_items add constraint portfolio_items_category_check
+  check(category in ('playeras','medallas','dorsales','calcetas','eventos'));
+
 alter table public.portfolio_items enable row level security;
 alter table public.quote_requests enable row level security;
 create index if not exists portfolio_items_category_sort on public.portfolio_items(category,sort_order,created_at desc);
 create index if not exists quote_requests_status_created on public.quote_requests(status,created_at desc);
+
+
+alter table public.events add column if not exists socks_image text;
+
+-- Fotografías compartidas por participantes; nunca se publican sin aprobación.
+create table if not exists public.event_photos (
+  id uuid primary key default gen_random_uuid(),
+  event_id uuid not null references public.events(id) on delete cascade,
+  participant_name text not null,
+  caption text,
+  image_url text not null,
+  status text not null default 'pending' check (status in ('pending','approved','rejected')),
+  created_at timestamptz not null default now()
+);
+alter table public.event_photos enable row level security;
+create index if not exists event_photos_event_status_created
+  on public.event_photos(event_id,status,created_at desc);
