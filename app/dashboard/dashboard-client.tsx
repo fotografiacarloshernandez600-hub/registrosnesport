@@ -111,7 +111,7 @@ export default function DashboardClient({
       );
       setNotice(
         status === "approved"
-          ? `Pago aprobado. Folio asignado: ${j.folio}. Ya puedes enviarlo por WhatsApp o correo.`
+          ? `Pago aprobado. Folio asignado: ${j.folio}. Ya puedes enviarlo por WhatsApp o correo. ${(() => { const ev = events.find((item) => item.id === rows.find((row) => row.id === id)?.event_id); return ev ? `Recordatorio para el corredor: llega con anticipación para prevenir imprevistos${ev.access_time ? `; acceso ${ev.access_time}` : ""}${ev.warmup_time ? `; calentamiento ${ev.warmup_time}` : ""}${ev.kit_pickup_info ? `; entrega del kit: ${ev.kit_pickup_info}` : "; entrega del kit: pendiente de confirmar"}.` : "Recuerda comunicar horarios y entrega del kit al corredor."; })()}`
           : "Registro marcado como rechazado.",
       );
     } else setNotice(j.error || "No se pudo actualizar el pago");
@@ -124,6 +124,7 @@ export default function DashboardClient({
       const full = new FormData(e.currentTarget),
         kinds = [
           "heroImage",
+          "eventLogo",
           "shirtImage",
           "bibImage",
           "medalImage",
@@ -137,6 +138,7 @@ export default function DashboardClient({
         file: File;
       }[];
       const sponsorNames = full.getAll("sponsorName").map(String),
+        sponsorDescriptions = full.getAll("sponsorDescription").map(String),
         sponsorFiles = full.getAll("sponsorLogo");
       sponsorNames.forEach((name, index) => {
         const file = sponsorFiles[index];
@@ -147,7 +149,7 @@ export default function DashboardClient({
           throw new Error("Escribe el nombre de cada patrocinador.");
       });
       const sponsors = sponsorNames
-        .map((name, i) => ({ name: name.trim(), file: sponsorFiles[i] }))
+        .map((name, i) => ({ name: name.trim(), description: (sponsorDescriptions[i] || "").trim(), file: sponsorFiles[i] }))
         .filter(
           (x) => x.name && x.file instanceof File && (x.file as File).size > 0,
         ) as { name: string; file: File }[];
@@ -162,7 +164,7 @@ export default function DashboardClient({
         if (file.size > 3 * 1024 * 1024)
           throw new Error(`El logo de ${name} supera 3 MB.`);
       }
-      for (const kind of [...kinds, "sponsorName", "sponsorLogo"])
+      for (const kind of [...kinds, "sponsorName", "sponsorLogo", "sponsorDescription"])
         full.delete(kind);
       const controller = new AbortController(),
         timer = setTimeout(() => controller.abort(), 30000);
@@ -194,11 +196,21 @@ export default function DashboardClient({
         if (!upload.ok)
           throw new Error(answer.error || `No se pudo subir ${file.name}`);
       }
+      for (const kind of ["waiverPdf", "privacyPdf"] as const) {
+        const documentFile = full.get(kind);
+        if (documentFile instanceof File && documentFile.size > 0) {
+          if (documentFile.type !== "application/pdf" || documentFile.size > 12 * 1024 * 1024) throw new Error(`${kind === "waiverPdf" ? "La carta responsiva" : "El aviso de privacidad"} debe ser PDF de máximo 12 MB.`);
+          const documentData = new FormData(); documentData.set("eventId", j.id); documentData.set("kind", kind); documentData.set("file", documentFile);
+          const uploaded = await fetch("/api/admin/events/documents", { method: "POST", body: documentData }); const result = await uploaded.json();
+          if (!uploaded.ok) throw new Error(result.error || "No se pudo subir el PDF.");
+        }
+      }
       for (const [sponsorIndex, sponsor] of sponsors.entries()) {
         setNotice(`Subiendo patrocinador ${sponsor.name}...`);
         const sponsorData = new FormData();
         sponsorData.set("eventId", j.id);
         sponsorData.set("name", sponsor.name);
+        sponsorData.set("description", sponsor.description);
         sponsorData.set("sortOrder", String(sponsorIndex));
         sponsorData.set("file", sponsor.file);
         const upload = await fetch("/api/admin/events/sponsors", {
@@ -1092,6 +1104,7 @@ export default function DashboardClient({
                   Portada
                   <input name="heroImage" type="file" accept="image/*" />
                 </label>
+                <label>Logotipo de la carrera<input name="eventLogo" type="file" accept="image/*" /></label>
                 <label>
                   Playera
                   <input name="shirtImage" type="file" accept="image/*" />
@@ -1126,6 +1139,10 @@ export default function DashboardClient({
                         name="sponsorName"
                         placeholder="Ej. CrossFit Ek’ Balam"
                       />
+                    </label>
+                    <label>
+                      Descripción del patrocinador
+                      <input name="sponsorDescription" placeholder="¿Quiénes son y qué hacen?" />
                     </label>
                     <label>
                       Logo PNG
@@ -1177,14 +1194,15 @@ export default function DashboardClient({
                 <input required name="bankClabe" />
               </label>
             </div>
-            <label>
-              Carta responsiva
-              <textarea required name="waiver" />
-            </label>
-            <label>
-              Aviso de privacidad
-              <textarea required name="privacy" />
-            </label>
+            <div className="form-grid">
+              <label>Hora de acceso<input name="accessTime" placeholder="Ej. 4:40 a. m." /></label>
+              <label>Hora de calentamiento<input name="warmupTime" placeholder="Ej. 6:45 a. m." /></label>
+              <label className="wide">Día y lugar de entrega del kit<textarea name="kitPickupInfo" placeholder="Pendiente de confirmar" /></label>
+              <label className="wide">Concepto de pago<textarea name="paymentConcept" placeholder="Nombre completo del corredor; cada corredor paga por separado" /></label>
+            </div>
+            <fieldset><legend>Documentos PDF</legend><label>Carta responsiva PDF<input name="waiverPdf" type="file" accept="application/pdf,.pdf" /></label><label>Aviso de privacidad PDF<input name="privacyPdf" type="file" accept="application/pdf,.pdf" /></label></fieldset>
+            <label>Carta responsiva (texto opcional de respaldo)<textarea name="waiver" /></label>
+            <label>Aviso de privacidad (texto opcional de respaldo)<textarea name="privacy" /></label>
             <div className="form-actions">
               <button
                 type="button"

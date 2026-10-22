@@ -3,13 +3,14 @@ import {
   CalendarDays,
   MapPin,
   Medal,
-  Shirt,
   Sparkles,
   Trophy,
 } from "lucide-react";
 import { getEvent } from "@/lib/events";
 import RegistrationForm from "../../registration-form";
 import EventPhotoGallery from "../../event-photo-gallery";
+import KitShowcase from "../../kit-showcase";
+import EventSponsors from "../../event-sponsors";
 import { supabaseSelect } from "@/lib/supabase";
 export const dynamic = "force-dynamic";
 export default async function RaceDetail({
@@ -21,21 +22,18 @@ export default async function RaceDetail({
     event = await getEvent(slug);
   if (!event) notFound();
   const open = event.status === "published";
+  const eventHasEnded = new Date(event.event_date).getTime() + 12 * 60 * 60 * 1000 < Date.now();
   let participantPhotos: {id:string;participant_name:string;caption:string|null;image_url:string;created_at:string}[] = [];
   try {
     participantPhotos = await supabaseSelect("event_photos", `select=id,participant_name,caption,image_url,created_at&event_id=eq.${encodeURIComponent(event.id)}&status=eq.approved&order=created_at.desc&limit=100`);
   } catch {}
   const kit = [
-    { image: event.shirt_image, icon: <Shirt />, name: "Playera oficial" },
-    { image: event.medal_image, icon: <Medal />, name: "Medalla finisher" },
-    {
-      image: event.bib_image,
-      icon: <span className="bib-mini">127</span>,
-      name: "Dorsal personalizado",
-    },
-    { image: event.kit_image, icon: <Sparkles />, name: "Kit del corredor" },
-    { image: event.socks_image, icon: <Shirt />, name: "Calcetas oficiales" },
-  ].filter((x) => x.image || x.name);
+    { image: event.shirt_image, name: "Playera oficial" },
+    { image: event.medal_image, name: "Medalla finisher" },
+    { image: event.bib_image, name: "Dorsal personalizado" },
+    { image: event.kit_image, name: "Kit del corredor" },
+    { image: event.socks_image, name: "Calcetas oficiales" },
+  ];
   return (
     <main>
       <header className="nav-shell">
@@ -74,8 +72,8 @@ export default async function RaceDetail({
             {open ? "Inscribirme" : "Conocer la carrera"}
           </a>
         </div>
-        <aside>
-          <strong>{event.categories.split(",")[0].trim()}</strong>
+        <aside className="event-logo-card">
+          {event.event_logo ? <img src={event.event_logo} alt={`Logotipo de ${event.title}`} /> : <div className="event-logo-fallback"><Medal size={42}/><strong>{event.title}</strong></div>}
           <small>{event.location}</small>
         </aside>
       </section>
@@ -113,23 +111,11 @@ export default async function RaceDetail({
           <span>LA EXPERIENCIA</span>
           <h2>Todo listo para cruzar la meta.</h2>
           <p>{event.description}</p>
-          <h3>Tu inscripción incluye</h3>
-          <p>{event.includes}</p>
-          {event.prizes && (
-            <>
-              <h3>Premios</h3>
-              <p>{event.prizes}</p>
-            </>
-          )}
+          <div className="race-includes-panel"><span>LO QUE TE LLEVAS</span><h3>Tu inscripción incluye</h3><p>{event.includes}</p></div>
+          {event.prizes && <div className="race-prizes-panel"><span>RECONOCEMOS TU ESFUERZO</span><h3>Premios</h3><p>{event.prizes}</p></div>}
+          <div className="race-logistics-panel"><span>PLANEA TU EXPERIENCIA</span><h3>Indicaciones importantes</h3><p><b>Acceso:</b> {event.access_time || "Pendiente de confirmar"}{event.access_time ? ". Te recomendamos llegar con anticipación para evitar imprevistos o tráfico." : "."}</p><p><b>Calentamiento:</b> {event.warmup_time || "Pendiente de confirmar"}.</p><p><b>Entrega del kit:</b> {event.kit_pickup_info || "Pendiente de confirmar"}</p></div>
         </div>
-        <div className="kit-showcase media-kit">
-          {kit.map((x) => (
-            <article key={x.name}>
-              {x.image ? <img src={x.image} alt={x.name} /> : x.icon}
-              <b>{x.name}</b>
-            </article>
-          ))}
-        </div>
+        <KitShowcase items={kit} />
       </section>
       {!!event.event_sponsors?.length && (
         <section className="event-sponsors">
@@ -138,19 +124,9 @@ export default async function RaceDetail({
             <h2>Patrocinadores oficiales</h2>
             <p>Marcas que hacen posible esta experiencia deportiva.</p>
           </div>
-          <div className="sponsor-logo-grid">
-            {[...event.event_sponsors]
-              .sort((a, b) => a.sort_order - b.sort_order)
-              .map((sponsor) => (
-                <article key={sponsor.id}>
-                  <img src={sponsor.logo_url} alt={sponsor.name} />
-                  <b>{sponsor.name}</b>
-                </article>
-              ))}
-          </div>
+          <EventSponsors sponsors={event.event_sponsors} />
         </section>
       )}
-      <EventPhotoGallery eventId={event.id} eventTitle={event.title} initialPhotos={participantPhotos} />
       {event.faq && (
         <section className="faq-section">
           <span>PREGUNTAS FRECUENTES</span>
@@ -198,6 +174,7 @@ export default async function RaceDetail({
           </a>
         </section>
       )}
+      {eventHasEnded && <EventPhotoGallery eventId={event.id} eventTitle={event.title} initialPhotos={participantPhotos} /> }
     </main>
   );
 }

@@ -24,9 +24,11 @@ export default function EventPhotoGallery({ eventId, eventTitle, initialPhotos }
     finally { setBusy(false); }
   }
   return <section className="participant-photos-section" id="fotos-participantes">
-    <div className="participant-photos-heading"><span>COMUNIDAD NESPORT</span><h2>La carrera desde tu mirada</h2><p>Comparte tu foto favorita de {eventTitle}. Todas las imágenes se revisan antes de publicarse.</p></div>
+    <div className="participant-photos-heading"><span>COMUNIDAD NESPORT</span><h2>La carrera desde tu mirada</h2><p>La carrera ya terminó: comparte tu foto favorita de {eventTitle}. Solo corredores registrados y con pago aprobado pueden participar; todas las imágenes se revisan antes de publicarse.</p></div>
     <form className="participant-photo-form" onSubmit={submit}>
       <label>Tu nombre<input name="participantName" required maxLength={100} placeholder="Nombre del participante"/></label>
+      <label>Correo usado en tu inscripción<input name="email" required type="email" placeholder="correo@ejemplo.com"/></label>
+      <label>WhatsApp usado en tu inscripción<input name="phone" required inputMode="tel" placeholder="10 dígitos"/></label>
       <label>Descripción <small>(opcional)</small><input name="caption" maxLength={240} placeholder="Ej. Mi llegada a la meta"/></label>
       <label className="participant-photo-file"><Camera/><span>Seleccionar fotografía</span><small>JPG, PNG o WebP · máximo 6 MB</small><input required name="file" type="file" accept="image/jpeg,image/png,image/webp"/></label>
       <label className="photo-consent"><input required type="checkbox" name="photoConsent" value="yes"/> Confirmo que tengo derecho a compartir esta imagen y autorizo a Nesport a publicarla si es aprobada.</label>
@@ -36,7 +38,7 @@ export default function EventPhotoGallery({ eventId, eventTitle, initialPhotos }
     </form>
     <div className="participant-photo-grid">
       {photos.map(photo => <article key={photo.id}><img src={photo.image_url} alt={photo.caption || `Fotografía de ${photo.participant_name}`}/><div><b>{photo.participant_name}</b>{photo.caption && <p>{photo.caption}</p>}</div></article>)}
-      {!photos.length && <div className="participant-photo-empty"><Camera/><b>Las primeras fotos están por llegar</b><span>Comparte tu recuerdo y forma parte de la galería de esta carrera.</span></div>}
+      {!photos.length && <div className="participant-photo-empty"><Camera/><b>Las primeras fotos están por llegar</b><span>La galería se habilitó después del evento. Comparte tu recuerdo y forma parte de la comunidad Nesport.</span></div>}
     </div>
   </section>;
 }
