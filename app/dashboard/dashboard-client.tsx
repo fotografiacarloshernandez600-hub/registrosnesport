@@ -152,7 +152,7 @@ export default function DashboardClient({
         .map((name, i) => ({ name: name.trim(), description: (sponsorDescriptions[i] || "").trim(), file: sponsorFiles[i] }))
         .filter(
           (x) => x.name && x.file instanceof File && (x.file as File).size > 0,
-        ) as { name: string; file: File }[];
+        ) as { name: string; description: string; file: File }[];
       for (const { file } of files)
         if (file.size > 4 * 1024 * 1024)
           throw new Error(
