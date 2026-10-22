@@ -128,7 +128,6 @@ export default function DashboardClient({
           "shirtImage",
           "bibImage",
           "medalImage",
-          "kitImage",
           "socksImage",
         ];
       const files = kinds
