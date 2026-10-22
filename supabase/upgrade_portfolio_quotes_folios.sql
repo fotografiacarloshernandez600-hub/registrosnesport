@@ -18,11 +18,11 @@ begin
      and old.payment_status is distinct from 'approved'
      and new.folio is null then
     perform pg_advisory_xact_lock(hashtextextended(new.event_id::text, 0));
-    select coalesce(max((split_part(folio,'.',2))::integer),0)+1
+    select coalesce(max(folio::integer),0)+1
       into next_number
       from public.registrations
-     where event_id = new.event_id and folio ~ '^0\.[0-9]+$';
-    new.folio := '0.' || lpad(next_number::text,3,'0');
+     where event_id = new.event_id and folio ~ '^[0-9]{3}$';
+    new.folio := lpad(next_number::text,3,'0');
   end if;
   return new;
 end;
