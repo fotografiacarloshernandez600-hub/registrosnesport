@@ -17,6 +17,13 @@ create table if not exists public.events (
   bank_account text not null,
   bank_clabe text not null,
   hero_image text,
+  event_logo text,
+  waiver_pdf text,
+  privacy_pdf text,
+  access_time text,
+  warmup_time text,
+  kit_pickup_info text,
+  payment_concept text,
   shirt_image text,
   bib_image text,
   medal_image text,
@@ -55,6 +62,7 @@ create table if not exists public.event_sponsors (
   id uuid primary key default gen_random_uuid(),
   event_id uuid not null references public.events(id) on delete cascade,
   name text not null,
+  description text,
   logo_url text not null,
   sort_order integer not null default 0,
   created_at timestamptz not null default now()
@@ -74,7 +82,7 @@ values ('payment-receipts','payment-receipts',false)
 on conflict (id) do nothing;
 
 insert into storage.buckets (id,name,public,file_size_limit,allowed_mime_types)
-values ('event-assets','event-assets',true,6291456,array['image/jpeg','image/png','image/webp','image/gif'])
+values ('event-assets','event-assets',true,6291456,array['image/jpeg','image/png','image/webp','image/gif','application/pdf'])
 on conflict (id) do update set public=true,file_size_limit=excluded.file_size_limit,allowed_mime_types=excluded.allowed_mime_types;
 
 create or replace function public.assign_folio_on_payment_approval()
