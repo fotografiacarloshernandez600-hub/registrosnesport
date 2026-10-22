@@ -162,3 +162,74 @@ footer{background:#0b0d0f;color:#fff;padding:42px max(24px,5vw);display:flex;ali
 .existing-sponsors article button{white-space:nowrap;}
 @media(max-width:850px){.sponsor-input-row{grid-template-columns:1fr 1fr;}.existing-sponsors article{grid-template-columns:60px 1fr;}.existing-sponsors article label,.existing-sponsors article button{grid-column:1/-1;}}
 .marketing-photo-box{display:grid;grid-template-columns:32px 1fr;gap:12px;margin:18px 0;padding:20px;border:1px solid #e7d6ca;border-radius:14px;background:linear-gradient(135deg,#fff8f2,#fff)}.marketing-photo-box>svg{color:var(--orange);width:26px;height:26px}.marketing-photo-box b{font-size:15px}.marketing-photo-box p{color:#666;line-height:1.6;font-size:13px;margin:7px 0 14px}.marketing-photo-box .upload-box{grid-column:1/-1}.marketing-consent{grid-column:1/-1;display:flex;align-items:flex-start;gap:9px;color:#555;font-size:12px;line-height:1.5}.marketing-consent input{margin-top:3px;flex:0 0 auto}
+
+/* Descripciones completas de patrocinadores */
+.sponsor-lightbox {
+  padding: 16px;
+  overflow-y: auto;
+  align-items: center;
+}
+
+.sponsor-lightbox article {
+  width: min(920px, 100%);
+  max-height: calc(100dvh - 32px);
+  height: auto;
+  display: grid;
+  grid-template-columns: minmax(180px, 0.72fr) minmax(0, 1.28fr);
+  align-items: stretch;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sponsor-lightbox article > div {
+  min-width: 0;
+  max-height: none;
+  height: auto;
+  overflow: visible;
+  padding: 28px;
+  align-self: center;
+}
+
+.sponsor-lightbox article > div p {
+  max-height: none;
+  height: auto;
+  overflow: visible;
+  display: block;
+  -webkit-line-clamp: unset;
+  -webkit-box-orient: initial;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.75;
+}
+
+.sponsor-lightbox article > div h3 {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+  .sponsor-lightbox {
+    padding: 10px;
+    align-items: flex-start;
+  }
+
+  .sponsor-lightbox article {
+    grid-template-columns: 1fr;
+    max-height: calc(100dvh - 20px);
+  }
+
+  .sponsor-lightbox article > img {
+    height: 170px;
+    min-height: 120px;
+    max-height: 190px;
+    padding: 18px;
+  }
+
+  .sponsor-lightbox article > div {
+    padding: 20px;
+  }
+
+  .sponsor-lightbox article > div p {
+    font-size: 14px;
+    line-height: 1.7;
+  }
+}
