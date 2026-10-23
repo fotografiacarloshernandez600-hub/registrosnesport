@@ -98,7 +98,8 @@ export default function DashboardClient({
     const grad=ctx.createLinearGradient(0,0,0,675);grad.addColorStop(0,"rgba(0,0,0,.25)");grad.addColorStop(1,"rgba(0,0,0,.94)");ctx.fillStyle=grad;ctx.fillRect(0,0,1200,675);
     ctx.textAlign="center";ctx.fillStyle="#ffffff";
     ctx.font="bold 35px Arial";ctx.fillText("NESPORT · ¡BIENVENIDO A LA CARRERA!",600,105);
-    function lineWrap(text:string,y:number,maxWidth:number,font:string){ctx.font=font;const words=text.split(/\s+/);let line="";for(const word of words){const test=line?line+" "+word:word;if(ctx.measureText(test).width>maxWidth&&line){ctx.fillText(line,600,y);y+=58;line=word}else line=test;}ctx.fillText(line,600,y);return y;}
+    const context = ctx;
+    function lineWrap(text:string,y:number,maxWidth:number,font:string){context.font=font;const words=text.split(/\s+/);let line="";for(const word of words){const test=line?line+" "+word:word;if(context.measureText(test).width>maxWidth&&line){context.fillText(line,600,y);y+=58;line=word}else line=test;}context.fillText(line,600,y);return y;}
     lineWrap(event.title.toUpperCase(),275,1060,"bold 52px Arial");
     lineWrap(runner.full_name.toUpperCase(),440,1080,"bold 43px Arial");
     ctx.font="bold 70px Arial";ctx.fillStyle="#ffdf60";ctx.fillText(`TU FOLIO: ${runner.folio}`,600,555);
