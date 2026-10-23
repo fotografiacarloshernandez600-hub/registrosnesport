@@ -105,6 +105,16 @@ export default async function RaceDetail({
           <b>$ {event.price} MXN</b>
         </div>
       </section>
+      {event.location?.trim() && (
+        <section id="ubicacion" style={{maxWidth:1180,margin:"36px auto",padding:"0 20px"}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:16,flexWrap:"wrap",marginBottom:18}}>
+            <div><small style={{color:"#e60023",fontWeight:800,letterSpacing:2}}>UBICACIÓN DE LA CARRERA</small><h2 style={{margin:"8px 0"}}>¿Cómo llegar a la salida y meta?</h2><p>{event.location}</p></div>
+            <a className="btn primary" href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(event.location)}`} target="_blank" rel="noopener noreferrer"><MapPin size={18}/> Cómo llegar</a>
+          </div>
+          <iframe title={`Mapa de ${event.title}`} src={`https://maps.google.com/maps?q=${encodeURIComponent(event.location)}&output=embed`} loading="lazy" referrerPolicy="no-referrer-when-downgrade" style={{display:"block",width:"100%",height:340,border:0,borderRadius:20,background:"#e8e8e8"}} allowFullScreen />
+          <p style={{fontSize:13,opacity:.75,marginTop:10}}>El mapa se genera con el lugar indicado por el organizador. Verifica el punto exacto antes de viajar.</p>
+        </section>
+      )}
       <section className="race-story">
         <div>
           <span>LA EXPERIENCIA</span>

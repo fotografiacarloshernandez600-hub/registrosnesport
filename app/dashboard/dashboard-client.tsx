@@ -1082,8 +1082,9 @@ export default function DashboardClient({
                 <input required type="datetime-local" name="eventDate" />
               </label>
               <label>
-                Lugar
-                <input required name="location" />
+                Ubicación exacta de la carrera (para el mapa)
+                <input required name="location" placeholder="Ej. Playa del Sol, Paraíso, Tabasco, México" />
+                <small>Esta dirección se mostrará en el mapa de la carrera y en el botón «Cómo llegar».</small>
               </label>
               <label>
                 Precio
