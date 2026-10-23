@@ -1090,7 +1090,7 @@ export default function DashboardClient({
                 Precio
                 <input required type="number" min="0" name="price" />
               </label>
-              <label>
+              <label>Cupo máximo de atletas (opcional)<input type="number" name="capacity" min="1" placeholder="Sin límite" /></label><label>
                 Estado
                 <select name="status" defaultValue="published">
                   <option value="published">Inscripciones abiertas</option>
