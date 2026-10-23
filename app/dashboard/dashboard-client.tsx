@@ -154,7 +154,6 @@ export default function DashboardClient({
           "shirtImage",
           "bibImage",
           "medalImage",
-          "kitImage",
           "socksImage",
         ];
       const files = kinds
@@ -1148,10 +1147,6 @@ export default function DashboardClient({
                 <label>
                   Medalla
                   <input name="medalImage" type="file" accept="image/*" />
-                </label>
-                <label>
-                  Kit
-                  <input name="kitImage" type="file" accept="image/*" />
                 </label>
                 <label>
                   Calcetas
