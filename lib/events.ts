@@ -8,6 +8,7 @@ export type EventSponsor = {
 };
 export type RaceEvent = {
   id: string;
+  capacity: number | null;
   title: string;
   slug: string;
   description: string;
@@ -43,7 +44,7 @@ export type RaceEvent = {
 export async function getEvents() {
   try {
     const fields =
-      "id,title,slug,description,location,event_date,price,categories,includes,waiver,privacy,bank_name,bank_holder,bank_account,bank_clabe,status,hero_image,event_logo,waiver_pdf,privacy_pdf,access_time,warmup_time,kit_pickup_info,payment_concept,shirt_image,bib_image,medal_image,kit_image,socks_image,prizes,faq,event_sponsors(id,name,logo_url,sort_order,description)";
+      "id,title,slug,capacity,description,location,event_date,price,categories,includes,waiver,privacy,bank_name,bank_holder,bank_account,bank_clabe,status,hero_image,event_logo,waiver_pdf,privacy_pdf,access_time,warmup_time,kit_pickup_info,payment_concept,shirt_image,bib_image,medal_image,kit_image,socks_image,prizes,faq,event_sponsors(id,name,logo_url,sort_order,description)";
     return await supabaseSelect<RaceEvent>(
       "events",
       `select=${fields}&status=in.(published,coming_soon)&order=event_date.asc`,
