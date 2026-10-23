@@ -80,6 +80,31 @@ export default function DashboardClient({
     [editingRunner, setEditingRunner] = useState<AdminRegistration | null>(null),
     [notice, setNotice] = useState(connectionError),
     [busy, setBusy] = useState(false);
+  async function deleteRunner(id: string, name: string) {
+    if (!window.confirm(`¿Eliminar definitivamente a ${name}? Se quitará de los conteos, resultados y listados. Esta acción no se puede deshacer.`)) return;
+    const r=await fetch("/api/admin/registrations",{method:"DELETE",headers:{"content-type":"application/json"},body:JSON.stringify({id})});
+    const j=await r.json();
+    if(!r.ok){setNotice(j.error||"No se pudo eliminar al corredor");return;}
+    setRows(current=>current.filter(x=>x.id!==id));
+    setNotice(`Se eliminó a ${name} del registro.`);
+  }
+  async function downloadWelcome(runner: AdminRegistration) {
+    const event=events.find(e=>e.id===runner.event_id);
+    if(!event||!runner.folio)return;
+    const canvas=document.createElement("canvas");canvas.width=1200;canvas.height=675;
+    const ctx=canvas.getContext("2d");if(!ctx)return;
+    ctx.fillStyle="#15171c";ctx.fillRect(0,0,1200,675);
+    if(event.hero_image){try{const img=new Image();img.crossOrigin="anonymous";await new Promise<void>((resolve,reject)=>{img.onload=()=>resolve();img.onerror=()=>reject();img.src=event.hero_image!});const scale=Math.max(1200/img.width,675/img.height);ctx.drawImage(img,(1200-img.width*scale)/2,(675-img.height*scale)/2,img.width*scale,img.height*scale);}catch{setNotice("La portada no permite exportación por configuración de imágenes; se generará con fondo sólido.");}}
+    const grad=ctx.createLinearGradient(0,0,0,675);grad.addColorStop(0,"rgba(0,0,0,.25)");grad.addColorStop(1,"rgba(0,0,0,.94)");ctx.fillStyle=grad;ctx.fillRect(0,0,1200,675);
+    ctx.textAlign="center";ctx.fillStyle="#ffffff";
+    ctx.font="bold 35px Arial";ctx.fillText("NESPORT · ¡BIENVENIDO A LA CARRERA!",600,105);
+    function lineWrap(text:string,y:number,maxWidth:number,font:string){ctx.font=font;const words=text.split(/\s+/);let line="";for(const word of words){const test=line?line+" "+word:word;if(ctx.measureText(test).width>maxWidth&&line){ctx.fillText(line,600,y);y+=58;line=word}else line=test;}ctx.fillText(line,600,y);return y;}
+    lineWrap(event.title.toUpperCase(),275,1060,"bold 52px Arial");
+    lineWrap(runner.full_name.toUpperCase(),440,1080,"bold 43px Arial");
+    ctx.font="bold 70px Arial";ctx.fillStyle="#ffdf60";ctx.fillText(`TU FOLIO: ${runner.folio}`,600,555);
+    ctx.font="24px Arial";ctx.fillStyle="#fff";ctx.fillText("¡Nos vemos en la meta!",600,617);
+    canvas.toBlob(blob=>{if(!blob)return;const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=`bienvenida-${runner.folio}.png`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)},"image/png");
+  }
   const eventName = (id: string) =>
     events.find((e) => e.id === id)?.title || "Carrera no disponible";
   const filtered = useMemo(
@@ -128,6 +153,7 @@ export default function DashboardClient({
           "shirtImage",
           "bibImage",
           "medalImage",
+          "kitImage",
           "socksImage",
         ];
       const files = kinds
@@ -605,6 +631,7 @@ export default function DashboardClient({
                     <th>Categoría / talla</th>
                     <th>Pago</th>
                     <th>Comprobante</th>
+                    <th>Foto promocional</th>
                     <th>Entrega de kit</th>
                     <th>Contacto</th>
                   </tr>
@@ -665,6 +692,9 @@ export default function DashboardClient({
                           </a>
                         </td>
                         <td>
+                          {x.marketing_photo_url && x.marketing_photo_consent ? <div className="row-actions"><a className="table-link" target="_blank" rel="noopener noreferrer" href={x.marketing_photo_url}>Ver foto <ExternalLink /></a><a className="table-link" href={x.marketing_photo_url} target="_blank" rel="noopener noreferrer">Abrir para guardar <Download /></a></div> : <small>Sin fotografía autorizada</small>}
+                        </td>
+                        <td>
                           {x.kit_delivered_at ? (
                             <div className="kit-done">
                               <Check />
@@ -699,6 +729,8 @@ export default function DashboardClient({
                             >
                               <Pencil /> Editar
                             </button>
+                            {x.payment_status === "approved" && x.folio && <button onClick={() => downloadWelcome(x)}><Download /> Imagen de bienvenida</button>}
+                            <button className="danger" onClick={() => deleteRunner(x.id,x.full_name)}><Trash2 /> Eliminar corredor</button>
                             {x.payment_status === "approved" && x.folio && (
                               <>
                                 <a
@@ -725,7 +757,7 @@ export default function DashboardClient({
                   })}
                   {!filtered.length && (
                     <tr>
-                      <td colSpan={7} className="empty-row">
+                      <td colSpan={8} className="empty-row">
                         No encontramos corredores con esa búsqueda.
                       </td>
                     </tr>

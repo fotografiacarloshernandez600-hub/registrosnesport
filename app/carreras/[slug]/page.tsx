@@ -29,8 +29,9 @@ export default async function RaceDetail({
   } catch {}
   const kit = [
     { image: event.shirt_image, name: "Playera oficial" },
-    { image: event.medal_image, name: "Medalla Nesport" },
+    { image: event.medal_image, name: "Medalla finisher" },
     { image: event.bib_image, name: "Dorsal personalizado" },
+    { image: event.kit_image, name: "Kit del corredor" },
     { image: event.socks_image, name: "Calcetas oficiales" },
   ];
   return (

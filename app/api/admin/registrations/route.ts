@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isAdmin } from "../../../../lib/admin-auth";
-import { supabaseUpdate } from "../../../../lib/supabase";
+import { supabaseUpdate, supabaseDelete, supabaseSelect } from "../../../../lib/supabase";
 
 export async function PATCH(request: Request) {
   if (!await isAdmin()) return NextResponse.json({ error: "No autorizado" }, { status: 401 });
@@ -21,4 +21,18 @@ export async function PATCH(request: Request) {
   const rows=await supabaseUpdate("registrations", `id=eq.${encodeURIComponent(id)}`, { payment_status: status });
   const updated=rows[0] as {folio?:string|null}|undefined;
   return NextResponse.json({ ok: true, folio:updated?.folio??null });
+}
+
+export async function DELETE(request: Request) {
+  if (!await isAdmin()) return NextResponse.json({error:"No autorizado"},{status:401});
+  try {
+    const {id}=await request.json();
+    if(typeof id!=="string"||!id) return NextResponse.json({error:"ID inválido"},{status:400});
+    const existing=await supabaseSelect<{id:string}>("registrations",`select=id&id=eq.${encodeURIComponent(id)}&limit=1`);
+    if(!existing.length) return NextResponse.json({error:"El corredor ya no existe"},{status:404});
+    await supabaseDelete("registrations",`id=eq.${encodeURIComponent(id)}`);
+    const remaining=await supabaseSelect<{id:string}>("registrations",`select=id&id=eq.${encodeURIComponent(id)}&limit=1`);
+    if(remaining.length) throw new Error("No se pudo confirmar la eliminación");
+    return NextResponse.json({ok:true});
+  } catch(error) {return NextResponse.json({error:error instanceof Error?error.message:"No se pudo eliminar"},{status:500});}
 }
