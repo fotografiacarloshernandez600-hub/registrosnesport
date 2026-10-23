@@ -162,3 +162,15 @@ footer{background:#0b0d0f;color:#fff;padding:42px max(24px,5vw);display:flex;ali
 .existing-sponsors article button{white-space:nowrap;}
 @media(max-width:850px){.sponsor-input-row{grid-template-columns:1fr 1fr;}.existing-sponsors article{grid-template-columns:60px 1fr;}.existing-sponsors article label,.existing-sponsors article button{grid-column:1/-1;}}
 .marketing-photo-box{display:grid;grid-template-columns:32px 1fr;gap:12px;margin:18px 0;padding:20px;border:1px solid #e7d6ca;border-radius:14px;background:linear-gradient(135deg,#fff8f2,#fff)}.marketing-photo-box>svg{color:var(--orange);width:26px;height:26px}.marketing-photo-box b{font-size:15px}.marketing-photo-box p{color:#666;line-height:1.6;font-size:13px;margin:7px 0 14px}.marketing-photo-box .upload-box{grid-column:1/-1}.marketing-consent{grid-column:1/-1;display:flex;align-items:flex-start;gap:9px;color:#555;font-size:12px;line-height:1.5}.marketing-consent input{margin-top:3px;flex:0 0 auto}
+
+/* Patrocinadores: modal adaptable y descripción desplazable en cualquier pantalla */
+.sponsor-lightbox{padding:12px;}
+.sponsor-lightbox article{width:min(850px,100%);max-height:calc(100dvh - 24px);grid-template-columns:minmax(0,0.8fr) minmax(0,1.2fr);overflow:hidden;}
+.sponsor-lightbox article>img{width:100%;height:100%;max-height:80dvh;min-height:0;object-fit:contain;}
+.sponsor-lightbox .sponsor-detail-content{min-width:0;min-height:0;max-height:calc(100dvh - 24px);display:flex;flex-direction:column;padding:35px 22px 22px;overflow:hidden;}
+.sponsor-lightbox .sponsor-detail-content h3{font-size:clamp(20px,3vw,32px);overflow-wrap:anywhere;margin:10px 0 14px;}
+.sponsor-description-scroll{min-height:0;flex:1;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#e30613 #292929;padding-right:12px;}
+.sponsor-description-scroll p{white-space:pre-wrap;overflow-wrap:anywhere;margin:0;line-height:1.75;color:#eee;}
+.sponsor-description-scroll::-webkit-scrollbar{width:8px;}
+.sponsor-description-scroll::-webkit-scrollbar-thumb{background:#e30613;border-radius:8px;}
+@media(max-width:760px){.sponsor-lightbox article{grid-template-columns:1fr;grid-template-rows:minmax(90px,22dvh) minmax(0,1fr);height:min(660px,calc(100dvh - 24px));}.sponsor-lightbox article>img{height:100%;max-height:22dvh;padding:12px 52px 8px;}.sponsor-lightbox .sponsor-detail-content{height:100%;max-height:none;padding:15px 18px 18px;}.sponsor-description-scroll{overflow-y:scroll;}}
